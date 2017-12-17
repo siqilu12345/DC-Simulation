@@ -1,4 +1,5 @@
 function [results,uintrp,xq]=DCsimul
+%{ This is the main function. Using hemispere and distmeshndrev and distmeshndrev2 to generate the mesh. fcoeffunction and ccoeffunction are used to specify the parameter in the equation. isregion is used for generate abnormal region.%}
 %{
 [x,y,z] = meshgrid(-10:20:10);
 x = x(:);
