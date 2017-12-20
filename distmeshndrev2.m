@@ -23,77 +23,16 @@ function [p,t]=distmeshndrev2(fdist,fh,h,box,fix,varargin)
 dim=size(box,2);
 ptol=.001; ttol=.1; L0mult=1+.4/2^(dim-1); deltat=.1; geps=1e-1*h; deps=sqrt(eps)*h;
 
-%{
-% 1. Create initial distribution in bounding box
-if dim==1
-  p=(box(1):h:box(2))';
-else
-  cbox=cell(1,dim);
-  for ii=1:dim
-    cbox{ii}=box(1,ii):h:box(2,ii);
-  end
-  pp=cell(1,dim-1);
-  [pp{:}]=ndgrid(cbox{2:dim});
-  clear cbox;
-  l2=prod(size(pp{1}));
-  p=[];
-  rmin=1;   %require min(fh(p))=1
-  x1=[box(1,1):h:box(2,1)];
-  l1=length(x1);
-  dl=floor(2e8/l2);
-  if dl<1
-      disp('Memory not enough');
-      return;
-  end
-  l0=0;
-  while l0+dl<=l1
-      dp(1:dl*l2,:)=[reshape(repmat(x1(l0+1:l0+dl),l2,1),[],1),...
-          repmat(pp{1}(:),dl,1),repmat(pp{2}(:),dl,1)];
-      dp=dp(feval(fdist,dp,varargin{:})<geps,:);
-      r0=feval(fh,dp);
-      dp=[dp(rand(size(dp,1),1)<rmin^dim./r0.^dim,:)];
-      p=[p;dp];
-      l0=l0+dl;
-  end
-  dl=l1-l0;
-  if dl~=0
-    dp(1:dl*l2,:)=[reshape(repmat(x1(l0+1:l0+dl),l2,1),[],1),...
-            repmat(pp{1}(:),dl,1),repmat(pp{2}(:),dl,1)];
-    dp=dp(feval(fdist,dp,varargin{:})<geps,:);
-    r0=feval(fh,dp);
-    dp=[dp(rand(size(dp,1),1)<rmin.^dim./r0.^dim,:)];
-    p=[p;dp];
-  end
-end
-clear pp;
-disp('First step finished');
-save('firstp.mat','p');
-dp=0;
-%}
-%{
-% 1. Create initial distribution in bounding box
-if dim==1
-  p=(box(1):h:box(2))';
-else
-  cbox=cell(1,dim);
-  for ii=1:dim
-    cbox{ii}=box(1,ii):h:box(2,ii);
-  end
-  pp=cell(1,dim);
-  [pp{:}]=ndgrid(cbox{:});
-  p=zeros(prod(size(pp{1})),dim);
-  for ii=1:dim
-    p(:,ii)=pp{ii}(:);
-  end
-end
-%}
 % 2. Remove points outside the region, apply the rejection method
+%{
 load('firstp');
 p=p(feval(fdist,p,varargin{:})<geps,:);
 p=unique([fix; p],'rows');
+%}
+load('meshdata800.mat');
 N=size(p,1);
 
-count=0;
+count=800;
 p0=inf;
 while 1
   % 3. Retriangulation by Delaunay
@@ -131,7 +70,7 @@ while 1
     if mod(count,50)==0
         disp(count);
     end
-    if mod(count,100)==0
+    if mod(count,50)==0
         fname=['meshdata',num2str(count),'.mat'];
         save(fname,'p','t');
     end
@@ -164,7 +103,7 @@ while 1
   % 8. Termination criterion
   maxdp=max(deltat*sqrt(sum(dp(d<-geps,:).^2,2)));
   if maxdp<ptol*h, break; end
-  if count>10     %break add by me
+  if count>1000     %break add by me
       break;
   end
 end
