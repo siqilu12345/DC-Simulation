@@ -9,4 +9,4 @@ To solve these difficulties, we use Distmesh to generate non-uniform grid size(c
     
 There is also a problem in the orginal Distmesh package. The package needs to generate the mesh using the smallest size at first, which makes the array size unaffordable for the memory of the computer. I rewrite the program script distmeshnd.m to distmeshndrev.m and distmeshndrev2.m, so that it can generate array no more than the limite size at one time, and cut off nodes we don't need, and continue. The calculation takes a long time and is done bu using the server.
 
-See DCsimul.m the main function for the usage and relationships between the programs.
+See DCsimul.m the main function for the usage and relationships between the programs. See "figures" folder for model, result and the comparison between the numeric result and the theoretical result. 
